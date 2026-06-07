@@ -1,0 +1,4 @@
+interface:
+  display_name: "jq CLI"
+  short_description: "Run jq safely and correctly"
+  default_prompt: "Use $jq-cli to inspect, transform, or validate JSON with jq."

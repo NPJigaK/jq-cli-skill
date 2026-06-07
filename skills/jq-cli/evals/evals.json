@@ -1,0 +1,35 @@
+{
+  "skill_name": "jq-cli",
+  "evals": [
+    {
+      "id": "extract-nested-field",
+      "prompt": "Use jq to extract every user name from data/users.json, where names are under .users[].profile.name.",
+      "expected_output": "Uses jq with a simple field traversal, preserves JSON output unless raw text is explicitly needed, and avoids dumping large output into chat."
+    },
+    {
+      "id": "user-provided-filter-value",
+      "prompt": "Filter records.jsonl to rows where status equals the value in my shell variable STATUS.",
+      "expected_output": "Passes the shell value through --arg and uses jq select(.status == $status), without concatenating the value into the jq filter."
+    },
+    {
+      "id": "validate-required-id",
+      "prompt": "Check whether every object in items.json has an id and make the command fail if any object is missing it.",
+      "expected_output": "Uses jq -e with all(...; has(\"id\")) or an equivalent predicate, and explains the exit status meaning."
+    },
+    {
+      "id": "safe-transform-file",
+      "prompt": "Sort .items by .id in data.json and write the result back to data.json.",
+      "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file."
+    },
+    {
+      "id": "quote-heavy-filter",
+      "prompt": "In PowerShell, read the key foo.bar from input.json with jq.",
+      "expected_output": "Uses correct PowerShell quoting or recommends a filter file, and accesses the key as .[\"foo.bar\"] rather than .foo.bar."
+    },
+    {
+      "id": "large-jsonl-count",
+      "prompt": "Count records in a very large JSONL file with jq without loading everything into memory.",
+      "expected_output": "Avoids jq -s and uses a streaming/reduce inputs pattern such as jq -cn 'reduce inputs as $x (0; . + 1)'."
+    }
+  ]
+}
