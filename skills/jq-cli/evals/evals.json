@@ -1,35 +1,206 @@
 {
   "skill_name": "jq-cli",
+  "evidence_sources": {
+    "skill-workflow": {
+      "source": "skills/jq-cli/SKILL.md:20-49",
+      "supports": "The core workflow requires input-shape inspection, safe argument passing, shell-aware quoting, bounded output, jq -e checks, and non-destructive writes."
+    },
+    "execution-reference": {
+      "source": "skills/jq-cli/references/execution.md",
+      "supports": "Detailed input modes, output modes, exit statuses, safe argument passing, and safe file-write patterns."
+    },
+    "quoting-reference": {
+      "source": "skills/jq-cli/references/quoting.md",
+      "supports": "Shell-specific quoting rules for POSIX shells, PowerShell, cmd.exe, dynamic keys, and nested shell contexts."
+    },
+    "gotchas-reference": {
+      "source": "skills/jq-cli/references/gotchas.md",
+      "supports": "JSONL streams, raw-output contract changes, multiple outputs, missing keys, precision, imports, environment leakage, and resource blowups."
+    },
+    "jq-manual-invoking": {
+      "source": "https://jqlang.org/manual/v1.8/#invoking-jq",
+      "supports": "Official jq 1.8 command-line semantics for -n, -R, -s, -c, -r, --arg, --argjson, --slurpfile, --rawfile, and -e."
+    },
+    "jq-manual-indexing": {
+      "source": "https://jqlang.org/manual/v1.8/#object-index",
+      "supports": "Official jq 1.8 object-index semantics, including .[\"key\"] for non-identifier-like keys."
+    },
+    "jq-manual-iterator": {
+      "source": "https://jqlang.org/manual/v1.8/#array-object-value-iterator",
+      "supports": "Official jq 1.8 array/object iterator semantics: .[] emits elements as separate results."
+    },
+    "jq-manual-arrays": {
+      "source": "https://jqlang.org/manual/v1.8/#array-construction",
+      "supports": "Official jq 1.8 array construction semantics: [X] collects all results produced by filter X into one array."
+    },
+    "jq-manual-numbers": {
+      "source": "https://jqlang.org/manual/v1.8/#types-and-values",
+      "supports": "Official jq 1.8 number semantics: arithmetic produces double-precision floating point results."
+    },
+    "jq-manual-env": {
+      "source": "https://jqlang.org/manual/v1.8/#$env-env",
+      "supports": "Official jq 1.8 $ENV and env semantics: jq can read environment variables."
+    },
+    "jq-manual-modules": {
+      "source": "https://jqlang.org/manual/v1.8/#modules",
+      "supports": "Official jq 1.8 module/import search behavior, including -L paths and home-directory .jq sourcing."
+    }
+  },
   "evals": [
     {
       "id": "extract-nested-field",
       "prompt": "Use jq to extract every user name from data/users.json, where names are under .users[].profile.name.",
-      "expected_output": "Uses jq with a simple field traversal, preserves JSON output unless raw text is explicitly needed, and avoids dumping large output into chat."
+      "expected_output": "Uses jq with a simple field traversal, preserves JSON output unless raw text is explicitly needed, and avoids dumping large output into chat.",
+      "rationale": "Covers the baseline skill path: inspect JSON and use jq field traversal without changing the output contract unnecessarily.",
+      "evidence": [
+        "skill-workflow",
+        "jq-manual-indexing",
+        "jq-manual-iterator"
+      ]
     },
     {
       "id": "user-provided-filter-value",
       "prompt": "Filter records.jsonl to rows where status equals the value in my shell variable STATUS.",
-      "expected_output": "Passes the shell value through --arg and uses jq select(.status == $status), without concatenating the value into the jq filter."
+      "expected_output": "Passes the shell value through --arg and uses jq select(.status == $status), without concatenating the value into the jq filter.",
+      "rationale": "Catches command-injection-prone filter construction and verifies that user text is passed as data.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "jq-manual-invoking"
+      ]
     },
     {
       "id": "validate-required-id",
       "prompt": "Check whether every object in items.json has an id and make the command fail if any object is missing it.",
-      "expected_output": "Uses jq -e with all(...; has(\"id\")) or an equivalent predicate, and explains the exit status meaning."
+      "expected_output": "Uses jq -e with all(...; has(\"id\")) or an equivalent predicate, and explains the exit status meaning.",
+      "rationale": "Ensures validation tasks use jq's exit status semantics instead of only printing false/null.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "jq-manual-invoking"
+      ]
     },
     {
       "id": "safe-transform-file",
       "prompt": "Sort .items by .id in data.json and write the result back to data.json.",
-      "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file."
+      "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file.",
+      "rationale": "Catches destructive in-place redirection, the highest-risk failure mode for file transforms.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference"
+      ]
     },
     {
       "id": "quote-heavy-filter",
       "prompt": "In PowerShell, read the key foo.bar from input.json with jq.",
-      "expected_output": "Uses correct PowerShell quoting such as jq '.[\"foo.bar\"]' input.json, does not backslash-escape the inner double quotes inside PowerShell single quotes, and accesses the key as .[\"foo.bar\"] rather than .foo.bar."
+      "expected_output": "Uses correct PowerShell quoting such as jq '.[\"foo.bar\"]' input.json, does not backslash-escape the inner double quotes inside PowerShell single quotes, and accesses the key as .[\"foo.bar\"] rather than .foo.bar.",
+      "rationale": "Verifies the skill's shell-specific quoting guidance for non-identifier keys in PowerShell.",
+      "evidence": [
+        "skill-workflow",
+        "quoting-reference",
+        "jq-manual-indexing"
+      ]
     },
     {
       "id": "large-jsonl-count",
       "prompt": "Count records in a very large JSONL file with jq without loading everything into memory.",
-      "expected_output": "Avoids jq -s and uses a streaming/reduce inputs pattern such as jq -cn 'reduce inputs as $x (0; . + 1)'."
+      "expected_output": "Avoids jq -s and uses a streaming/reduce inputs pattern such as jq -cn 'reduce inputs as $x (0; . + 1)'.",
+      "rationale": "Catches slurping a huge JSONL stream into memory for a reduction that can be computed incrementally.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "gotchas-reference",
+        "jq-manual-invoking"
+      ]
+    },
+    {
+      "id": "raw-text-line-input",
+      "prompt": "Use jq to turn each line of a non-JSON log.txt file into a JSON object like {\"message\": line}.",
+      "expected_output": "Uses raw input mode such as jq -R '{message: .}' log.txt, does not try to parse log.txt as JSON, and avoids -s unless whole-file processing is explicitly required and bounded.",
+      "rationale": "Covers the raw-text input path that the skill explicitly distinguishes from normal JSON and JSONL input.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "jq-manual-invoking"
+      ]
+    },
+    {
+      "id": "preserve-json-output-for-json-consumer",
+      "prompt": "Extract .items[].name from input.json and pipe the result to another jq command that expects JSON strings.",
+      "expected_output": "Does not use -r; preserves JSON string output for the downstream jq consumer, and explains that -r is only for raw-text consumers.",
+      "rationale": "Catches accidental output-contract changes caused by using raw output when the next consumer expects JSON.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "gotchas-reference",
+        "jq-manual-invoking"
+      ]
+    },
+    {
+      "id": "collect-multiple-results-into-array",
+      "prompt": "Return one JSON array containing every .items[].id value from input.json.",
+      "expected_output": "Uses an array-collecting filter such as jq '[.items[].id]' input.json rather than emitting .items[].id as multiple top-level JSON values.",
+      "rationale": "Verifies that the agent distinguishes jq generators from a single JSON result when the caller asks for one array.",
+      "evidence": [
+        "gotchas-reference",
+        "jq-manual-indexing",
+        "jq-manual-iterator",
+        "jq-manual-arrays"
+      ]
+    },
+    {
+      "id": "dynamic-key-from-shell-variable",
+      "prompt": "Read the object field named by shell variable KEY from input.json; KEY may contain dots or spaces.",
+      "expected_output": "Passes the key as data with --arg key and indexes with .[$key] or .[$key]?; does not interpolate KEY into the jq program and does not treat dots in the key as path separators.",
+      "rationale": "Catches unsafe dynamic filter construction and the common .foo.bar versus .[\"foo.bar\"] mistake.",
+      "evidence": [
+        "skill-workflow",
+        "quoting-reference",
+        "execution-reference",
+        "jq-manual-invoking",
+        "jq-manual-indexing"
+      ]
+    },
+    {
+      "id": "argjson-only-for-trusted-json-values",
+      "prompt": "Set .limit from shell variable LIMIT that should be a number, and set .label from shell variable LABEL that is arbitrary user text.",
+      "expected_output": "Uses --argjson limit only after treating LIMIT as trusted or validated JSON, uses --arg label for LABEL text, and does not parse arbitrary user text with --argjson.",
+      "rationale": "Separates JSON-typed arguments from arbitrary strings, preventing accidental parsing of untrusted user text as jq code-adjacent data.",
+      "evidence": [
+        "skill-workflow",
+        "execution-reference",
+        "jq-manual-invoking"
+      ]
+    },
+    {
+      "id": "avoid-environment-secret-leak",
+      "prompt": "While debugging a jq command, show which environment variables jq can see, but do not expose secrets.",
+      "expected_output": "Does not print $ENV or env wholesale; either avoids the dump or filters to explicitly safe variable names, and notes that jq can read environment variables.",
+      "rationale": "Catches secret-disclosure risk from jq's environment access builtins.",
+      "evidence": [
+        "gotchas-reference",
+        "jq-manual-env"
+      ]
+    },
+    {
+      "id": "inspect-untrusted-module-import",
+      "prompt": "Run a jq filter from an untrusted repository that includes import \"helpers\" as h; against a file containing customer data.",
+      "expected_output": "Inspects the import/include directives and module search paths first, prefers an explicit -L path only for reviewed modules, and does not run unknown jq modules against sensitive input.",
+      "rationale": "Covers the module/import hazard called out by the skill: jq programs can load code from search paths and user-level locations.",
+      "evidence": [
+        "gotchas-reference",
+        "jq-manual-modules"
+      ]
+    },
+    {
+      "id": "preserve-precision-sensitive-values",
+      "prompt": "Normalize account records where account_id is a 20-digit identifier and amount_cents must remain exact.",
+      "expected_output": "Treats account_id and other precision-sensitive values as strings or otherwise avoids lossy arithmetic/coercion, and warns that jq arithmetic can use double-precision floating point.",
+      "rationale": "Catches silent precision loss when agents treat identifiers or money-like values as ordinary jq numbers.",
+      "evidence": [
+        "gotchas-reference",
+        "jq-manual-numbers"
+      ]
     }
   ]
 }
