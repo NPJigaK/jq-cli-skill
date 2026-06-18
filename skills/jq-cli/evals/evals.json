@@ -24,7 +24,7 @@
     {
       "id": "quote-heavy-filter",
       "prompt": "In PowerShell, read the key foo.bar from input.json with jq.",
-      "expected_output": "Uses correct PowerShell quoting or recommends a filter file, and accesses the key as .[\"foo.bar\"] rather than .foo.bar."
+      "expected_output": "Uses correct PowerShell quoting such as jq '.[\"foo.bar\"]' input.json, does not backslash-escape the inner double quotes inside PowerShell single quotes, and accesses the key as .[\"foo.bar\"] rather than .foo.bar."
     },
     {
       "id": "large-jsonl-count",
