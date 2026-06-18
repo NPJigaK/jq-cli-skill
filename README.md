@@ -100,14 +100,8 @@ Codex, Claude Code, Cursor, or another SKILL.md-compatible agent.
 
 The file is the canonical source for repository validation examples. It is not
 an OpenAI Evals API object and should not be treated as OpenAI Evals platform
-configuration. Runner-specific files, such as Promptfoo configs, should be
-generated from these cases instead of becoming the source of truth.
-
-This avoids coupling the Skill to the deprecated OpenAI Evals platform while
-keeping the evaluation cases portable. See OpenAI's
-[Evals platform deprecation](https://developers.openai.com/api/docs/deprecations#2026-06-03-evals-platform)
-and migration guidance for
-[moving from OpenAI Evals to Promptfoo](https://developers.openai.com/cookbook/examples/evaluation/moving-from-openai-evals-to-promptfoo).
+configuration. Runner-specific files should be generated from these cases
+instead of becoming the source of truth.
 
 ## Repository Layout
 

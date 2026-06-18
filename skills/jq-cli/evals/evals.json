@@ -6,14 +6,14 @@
   "runner_policy": {
     "canonical_source": true,
     "openai_evals_api_compatible": false,
-    "preferred_runner": "agent-neutral harness or generated Promptfoo config",
+    "preferred_runner": "agent-neutral harness or generated runner config",
     "supported_agents": [
       "codex",
       "claude-code",
       "cursor",
       "agent-skills-compatible"
     ],
-    "notes": "Adapters may translate these cases to Promptfoo or another runner, but generated runner configs should not become the source of truth."
+    "notes": "Adapters may translate these cases to a runner-specific format, but generated runner configs should not become the source of truth."
   },
   "evidence_sources": {
     "skill-workflow": {
