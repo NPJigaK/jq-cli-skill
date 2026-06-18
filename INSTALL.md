@@ -219,7 +219,8 @@ Steps:
 - `references/` contains runtime guidance that the skill loads when needed.
 - `agents/openai.yaml` is OpenAI/Codex UI metadata. Clients that do not read it
   can ignore it without changing the Skill semantics.
-- `evals/` contains repository validation examples. Ordinary clients can ignore
-  it.
+- `evals/` contains portable repository validation cases. They are not OpenAI
+  Evals API objects; runner-specific configs should be generated from them when
+  needed. Ordinary clients can ignore this directory.
 - Invocation syntax is client-specific: Codex uses `$jq-cli`; Claude Code and
   Cursor commonly use `/jq-cli` or a skill menu.
