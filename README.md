@@ -92,17 +92,6 @@ $jq-cli Sort .items by .id and write the result back safely.
 - interpreting `jq -e` exit statuses for validation checks
 - avoiding module/import, environment-leak, memory, and precision surprises
 
-## Evaluation Cases
-
-`skills/jq-cli/evals/evals.json` contains portable evaluation cases for this
-Skill. These cases are intentionally agent-neutral so they can be used to check
-Codex, Claude Code, Cursor, or another SKILL.md-compatible agent.
-
-The file is the canonical source for repository validation examples. It is not
-an OpenAI Evals API object and should not be treated as OpenAI Evals platform
-configuration. Runner-specific files should be generated from these cases
-instead of becoming the source of truth.
-
 ## Repository Layout
 
 ```text
