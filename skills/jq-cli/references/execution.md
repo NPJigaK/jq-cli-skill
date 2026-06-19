@@ -92,13 +92,21 @@ jq empty data.json.tmp
 mv data.json.tmp data.json
 ```
 
-On Windows, use the same idea with PowerShell commands:
+On Windows, use the same idea with PowerShell commands. Use the following
+redirect pattern in PowerShell 7.4+ or another byte-preserving shell. Windows
+PowerShell 5.1 and PowerShell 7.3 or older treat redirected native stdout as
+text rather than preserving the original byte stream; Windows PowerShell 5.1
+commonly writes UTF-16 output that `jq` may not parse on the validation step.
 
 ```powershell
 jq '.items |= sort_by(.id)' data.json > data.json.tmp
 jq empty data.json.tmp
 Move-Item -LiteralPath data.json.tmp -Destination data.json -Force
 ```
+
+In Windows PowerShell 5.1, run the redirect in `cmd.exe`, a POSIX shell, or
+PowerShell 7.4+. Prefer `jq -f transform.jq ... > data.json.tmp` when changing
+shells to avoid nested quoting mistakes.
 
 For valuable files, copy a backup or rely on git before replacing.
 

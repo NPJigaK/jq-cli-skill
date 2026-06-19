@@ -22,9 +22,14 @@
       "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file."
     },
     {
+      "id": "powershell-legacy-redirection",
+      "prompt": "In Windows PowerShell 5.1, transform data.json with jq and write the result back safely.",
+      "expected_output": "Avoids relying on Windows PowerShell 5.1 native-command redirection for jq output, because it can rewrite stdout as UTF-16 text. Uses a byte-preserving shell or PowerShell 7.4+ for the redirect, validates the temp file with jq, then replaces the original."
+    },
+    {
       "id": "quote-heavy-filter",
       "prompt": "In PowerShell, read the key foo.bar from input.json with jq.",
-      "expected_output": "Uses correct PowerShell quoting such as jq '.[\"foo.bar\"]' input.json, does not backslash-escape the inner double quotes inside PowerShell single quotes, and accesses the key as .[\"foo.bar\"] rather than .foo.bar."
+      "expected_output": "Distinguishes PowerShell native argument modes: PowerShell 7.3+ can use jq '.[\"foo.bar\"]' input.json, Windows PowerShell 5.1 or Legacy mode needs jq '.[\\\"foo.bar\\\"]' input.json, and cross-version commands should prefer jq -f; accesses the literal key as .[\"foo.bar\"] rather than .foo.bar."
     },
     {
       "id": "large-jsonl-count",

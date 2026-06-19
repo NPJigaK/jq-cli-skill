@@ -27,14 +27,29 @@ If the filter itself must contain a single quote, switch to a filter file.
 
 ## PowerShell
 
-Use single quotes around the jq program. Inner double quotes are literal inside
-PowerShell single-quoted strings, so do not backslash-escape them:
+Use single quotes around short jq programs, but account for native-command
+argument passing differences when the program contains embedded double quotes.
+
+For PowerShell 7.3+ with Standard/Windows native argument passing, embedded
+double quotes are preserved:
 
 ```powershell
 jq '.["foo"]' input.json
 '{"foo":42}' | jq '.["foo"]'
 jq '.["foo.bar"]' input.json
 ```
+
+For Windows PowerShell 5.1 or `$PSNativeCommandArgumentPassing = "Legacy"`,
+escape the embedded quotes so the native jq process receives them:
+
+```powershell
+jq '.[\"foo\"]' input.json
+'{"foo":42}' | jq '.[\"foo\"]'
+jq '.[\"foo.bar\"]' input.json
+```
+
+If a command must work across both modes, use `-f filter.jq` instead of an
+inline filter.
 
 For simple identifier keys, avoid inner quotes:
 
