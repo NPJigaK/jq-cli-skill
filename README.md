@@ -126,6 +126,9 @@ documentation:
 
 - https://jqlang.org/manual/v1.8/
 - https://jqlang.org/download/
+- https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_parsing
+- https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_quoting_rules
+- https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_redirection
 - https://developers.openai.com/codex/skills
 - https://code.claude.com/docs/en/skills
 - https://cursor.com/docs/skills.md
