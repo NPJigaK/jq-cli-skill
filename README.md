@@ -1,8 +1,23 @@
 # jq CLI Agent Skill
 
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/NPJigaK/jq-cli-skill?label=release)](https://github.com/NPJigaK/jq-cli-skill/releases/latest)
+
 A portable Agent Skill for using the `jq` command-line JSON processor safely
 and reliably from Codex, Claude Code, Cursor, and other SKILL.md-compatible
 coding agents.
+
+## Quick Start
+
+```bash
+npx skills add NPJigaK/jq-cli-skill --skill jq-cli --agent codex
+```
+
+```text
+$jq-cli Inspect this JSON file and summarize the top-level shape.
+```
+
+Works with Codex, Claude Code, Cursor, and other Agent Skills clients.
 
 The installable Skill is:
 
