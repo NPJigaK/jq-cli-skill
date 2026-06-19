@@ -53,6 +53,8 @@ Prefer small, verified jq commands over ad hoc JSON parsing in shell text tools.
 7. Write files safely:
    - Never redirect to the same file being read.
    - Write to a temporary file, validate it with jq, then replace the target.
+   - Chain commands or check exit status so replacement only runs after
+     validation succeeds.
    - Preserve the original until validation succeeds.
 
 ## Common Patterns
@@ -85,9 +87,9 @@ jq empty output.tmp
 Safely rewrite a JSON file:
 
 ```bash
-jq '.items |= sort_by(.id)' data.json > data.json.tmp
-jq -s -e 'length == 1' data.json.tmp > /dev/null
-mv data.json.tmp data.json
+jq '.items |= sort_by(.id)' data.json > data.json.tmp \
+  && jq -s -e 'length == 1' data.json.tmp > /dev/null \
+  && mv data.json.tmp data.json
 ```
 
 ## References

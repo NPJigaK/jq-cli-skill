@@ -102,12 +102,13 @@ Never write directly to the file being read:
 jq '.items |= sort_by(.id)' data.json > data.json
 ```
 
-Use a temp file and validate before replacing:
+Use a temp file and validate before replacing. Chain the commands or check exit
+status explicitly so the replacement only runs after validation succeeds:
 
 ```bash
-jq '.items |= sort_by(.id)' data.json > data.json.tmp
-jq empty data.json.tmp
-mv data.json.tmp data.json
+jq '.items |= sort_by(.id)' data.json > data.json.tmp \
+  && jq -s -e 'length == 1' data.json.tmp > /dev/null \
+  && mv data.json.tmp data.json
 ```
 
 On Windows, use the same idea with PowerShell commands. Use the following
@@ -118,8 +119,12 @@ commonly writes UTF-16 output that `jq` may not parse on the validation step.
 
 ```powershell
 jq '.items |= sort_by(.id)' data.json > data.json.tmp
-jq empty data.json.tmp
-Move-Item -LiteralPath data.json.tmp -Destination data.json -Force
+if ($LASTEXITCODE -eq 0) {
+  jq -s -e 'length == 1' data.json.tmp > $null
+}
+if ($LASTEXITCODE -eq 0) {
+  Move-Item -LiteralPath data.json.tmp -Destination data.json -Force
+}
 ```
 
 In Windows PowerShell 5.1, run the redirect in `cmd.exe`, a POSIX shell, or
