@@ -12,7 +12,7 @@ from typing import Any
 
 
 TOP_LEVEL_KEYS = {"skill_name", "evals"}
-EVAL_KEYS = {"id", "prompt", "expected_output", "files"}
+EVAL_KEYS = {"id", "prompt", "expected_output", "files", "assertions"}
 
 
 def fail(message: str) -> None:
@@ -79,14 +79,22 @@ def load_cases(path: Path) -> tuple[str, list[dict[str, Any]]]:
         if not isinstance(files, list) or any(not isinstance(item, str) for item in files):
             fail(f"evals[{index}].files must be an array of strings when present")
 
-        normalized_cases.append(
-            {
-                "id": case_id_text,
-                "prompt": prompt,
-                "expected_output": expected_output,
-                "files": files,
-            }
-        )
+        assertions = case.get("assertions", [])
+        if not isinstance(assertions, list) or any(
+            not isinstance(item, str) or item.strip() == "" for item in assertions
+        ):
+            fail(f"evals[{index}].assertions must be an array of non-empty strings when present")
+
+        normalized_case = {
+            "id": case_id_text,
+            "prompt": prompt,
+            "expected_output": expected_output,
+            "files": files,
+        }
+        if "assertions" in case:
+            normalized_case["assertions"] = assertions
+
+        normalized_cases.append(normalized_case)
 
     return skill_name, normalized_cases
 
@@ -111,6 +119,15 @@ def task_markdown(skill_name: str, skill_path: Path, case: dict[str, Any], mode:
 
     files = case["files"]
     file_block = "\n".join(f"- `{item}`" for item in files) if files else "- None"
+    assertions = case.get("assertions", [])
+    assertions_block = ""
+    if assertions:
+        assertion_lines = "\n".join(f"- {item}" for item in assertions)
+        assertions_block = f"""
+## Assertions
+
+{assertion_lines}
+"""
 
     return f"""# {case["id"]} ({mode})
 
@@ -127,6 +144,7 @@ def task_markdown(skill_name: str, skill_path: Path, case: dict[str, Any], mode:
 ## Expected Output
 
 {case["expected_output"]}
+{assertions_block}
 
 ## Record
 
@@ -152,6 +170,15 @@ Cases:
 
 
 def prepare_workspace(evals_path: Path, skill_path: Path, out_dir: Path) -> None:
+    evals_path = evals_path.resolve()
+    skill_path = skill_path.resolve()
+    out_dir = out_dir.resolve()
+
+    if not evals_path.is_file():
+        fail(f"evals file does not exist: {evals_path}")
+    if not (skill_path / "SKILL.md").is_file():
+        fail(f"skill path must contain SKILL.md: {skill_path}")
+
     skill_name, cases = load_cases(evals_path)
 
     if out_dir.exists() and any(out_dir.iterdir()):

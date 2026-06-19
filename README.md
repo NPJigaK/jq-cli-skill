@@ -97,13 +97,14 @@ $jq-cli Sort .items by .id and write the result back safely.
 The skill includes a small seed set of evaluation cases in
 `skills/jq-cli/evals/evals.json`. These are not OpenAI hosted Evals API objects.
 
-Prepare a local workspace outside the repository, then run each case in a clean
-agent session with and without the skill:
+From the repository root, prepare a local workspace outside the repository, then
+run each case in a clean agent session with and without the skill:
 
 ```bash
 python scripts/prepare_eval_workspace.py --out ../jq-cli-eval-workspace/iteration-1
 ```
 
+The generated task files include absolute paths to the skill under evaluation.
 Record the agent output and pass/fail notes in the generated workspace. Keep
 generated eval results out of the installable `skills/jq-cli/` directory.
 
