@@ -106,11 +106,20 @@ $jq-cli Sort .items by .id and write the result back safely.
 - choosing safe input modes for JSON, JSONL, raw text, and large files
 - interpreting `jq -e` exit statuses for validation checks
 - avoiding module/import, environment-leak, memory, and precision surprises
+- avoiding implicit jq module search paths for untrusted filters
+- handling native Windows `jq.exe` newline translation in WSL/MSYS2/Cygwin
+- distinguishing JSONL from JSON Text Sequences and streaming parse diagnostics
 
 ## Evaluation Loop
 
 The skill includes a small seed set of evaluation cases in
 `skills/jq-cli/evals/evals.json`. These are not OpenAI hosted Evals API objects.
+When adding runtime guidance, add or update an eval case unless the change is
+pure wording with no observable behavior.
+
+Eval cases use a split schema: `agent` contains only the prompt and public
+fixtures that may be shown to the agent; `grader` contains expected output and
+assertions that must stay hidden until after the response is recorded.
 
 From the repository root, prepare a local workspace outside the repository, then
 run each case in a clean agent session with and without the skill:
@@ -119,9 +128,11 @@ run each case in a clean agent session with and without the skill:
 python scripts/prepare_eval_workspace.py --out ../jq-cli-eval-workspace/iteration-1
 ```
 
-The generated task files include absolute paths to the skill under evaluation.
-Record the agent output and pass/fail notes in the generated workspace. Keep
-generated eval results out of the installable `skills/jq-cli/` directory.
+Give the agent only the case's agent-visible bundle: the mode-specific
+`TASK.md` plus any files under that case's `public/` directory. Use
+`grading/<case-id>/EVALUATION.md` only after the response is recorded; it
+contains the expected output and assertions. Keep generated eval results out of
+the installable `skills/jq-cli/` directory.
 
 ## Repository Layout
 

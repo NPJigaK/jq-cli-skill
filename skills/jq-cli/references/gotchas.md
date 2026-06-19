@@ -13,6 +13,12 @@ jq '.id' records.jsonl
 
 Only use `-s` when you actually need all records in memory at once.
 
+## JSON Text Sequences Are Not JSONL
+
+`--seq` is for JSON Text Sequences that use record separator framing. Do not use
+it as a synonym for JSONL/NDJSON. For ordinary newline-delimited JSON texts,
+default jq input is usually the right starting point.
+
 ## `-r` Changes the Contract
 
 `-r` emits raw strings. That is useful for shell tools, but it is no longer JSON
@@ -51,6 +57,8 @@ numbers as strings when exact representation matters.
 
 jq supports modules and imports. Search paths can include user-level locations
 such as `~/.jq`, and a home-directory `.jq` file can be automatically sourced.
+Read `references/modules.md` before running repository-provided modules,
+imports, or includes, especially against sensitive input.
 
 For untrusted repositories or filters:
 

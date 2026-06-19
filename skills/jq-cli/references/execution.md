@@ -21,6 +21,8 @@ safe file writes.
 | Small whole-file text | `jq -Rs 'filter' file.txt` | Reads the entire file as one string. |
 | Small whole JSON stream | `jq -s 'filter' file.jsonl` | Reads all inputs into one array. Avoid for large files. |
 | Huge nested JSON | `jq --stream 'filter' file.json` | Emits path/value events; design the filter for streaming form. |
+| Huge nested JSON with parse diagnostics | `jq --stream-errors 'filter' file.json` | Emits streaming values for parse errors; implies `--stream`. |
+| JSON Text Sequence | `jq --seq 'filter' file.jsonseq` | Uses RFC 7464-style record separators. Do not confuse with JSONL. |
 
 For reductions over many JSON inputs, use `jq -n 'reduce inputs as $x (...; ...)'`
 so the first input is not consumed before `inputs`.
@@ -48,11 +50,22 @@ from a user and should be treated as text, use `--arg`.
 | JSONL / compact | `-c` | One JSON value per line. |
 | Raw strings | `-r` | Use only when the next tool expects text, not JSON. |
 | NUL-delimited raw strings | `--raw-output0` | Useful with `xargs -0`; fails if output contains NUL. |
+| JSON Text Sequence | `--seq` | Emits record separators before each JSON value and LF after each output. |
 | No color | `-M` | Use for logs, files, or tests. |
 | No trailing newline | `-j` | Rare; use only when the consumer requires it. |
 
 Do not paste massive stdout into the final answer. Write full output to a file
 and summarize a capped preview.
+
+## Windows Native jq.exe Through POSIX-Like Shells
+
+When using a native Windows `jq.exe` from WSL, MSYS2, or Cygwin, add
+`--binary` / `-b` if exact LF output matters. Without it, jq may convert LF
+newlines to CRLF, which can break exact JSONL, raw newline-delimited output, or
+byte-sensitive downstream tools.
+
+This is separate from PowerShell redirection behavior. Still use temp files and
+validation for safe writes.
 
 ## Exit Status
 
@@ -128,4 +141,10 @@ Count JSONL records:
 
 ```bash
 jq -cn 'reduce inputs as $x (0; . + 1)' file.jsonl
+```
+
+Validate a JSON Text Sequence without treating it as JSONL:
+
+```bash
+jq --seq empty file.jsonseq
 ```

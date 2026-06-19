@@ -1,40 +1,163 @@
 {
+  "schema_version": 2,
   "skill_name": "jq-cli",
   "evals": [
     {
       "id": "extract-nested-field",
-      "prompt": "Use jq to extract every user name from data/users.json, where names are under .users[].profile.name.",
-      "expected_output": "Uses jq with a simple field traversal, preserves JSON output unless raw text is explicitly needed, and avoids dumping large output into chat."
+      "metadata": {
+        "tags": ["basics", "output-contract"]
+      },
+      "agent": {
+        "prompt": "Use jq to extract every user name from data/users.json, where names are under .users[].profile.name."
+      },
+      "grader": {
+        "expected_output": "Uses jq with a simple field traversal, preserves JSON output unless raw text is explicitly needed, and avoids dumping large output into chat."
+      }
     },
     {
       "id": "user-provided-filter-value",
-      "prompt": "Filter records.jsonl to rows where status equals the value in my shell variable STATUS.",
-      "expected_output": "Passes the shell value through --arg and uses jq select(.status == $status), without concatenating the value into the jq filter."
+      "metadata": {
+        "tags": ["argument-passing", "jsonl"]
+      },
+      "agent": {
+        "prompt": "Filter records.jsonl to rows where status equals the value in my shell variable STATUS."
+      },
+      "grader": {
+        "expected_output": "Passes the shell value through --arg and uses jq select(.status == $status), without concatenating the value into the jq filter."
+      }
     },
     {
       "id": "validate-required-id",
-      "prompt": "Check whether every object in items.json has an id and make the command fail if any object is missing it.",
-      "expected_output": "Uses jq -e with all(...; has(\"id\")) or an equivalent predicate, and explains the exit status meaning."
+      "metadata": {
+        "tags": ["exit-status", "validation"]
+      },
+      "agent": {
+        "prompt": "Check whether every object in items.json has an id and make the command fail if any object is missing it."
+      },
+      "grader": {
+        "expected_output": "Uses jq -e with all(...; has(\"id\")) or an equivalent predicate, and explains the exit status meaning."
+      }
     },
     {
       "id": "safe-transform-file",
-      "prompt": "Sort .items by .id in data.json and write the result back to data.json.",
-      "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file."
+      "metadata": {
+        "tags": ["write-safety"]
+      },
+      "agent": {
+        "prompt": "Sort .items by .id in data.json and write the result back to data.json."
+      },
+      "grader": {
+        "expected_output": "Writes to a temporary file, validates it with jq, and only then replaces data.json; never redirects output directly to the same input file."
+      }
     },
     {
       "id": "powershell-legacy-redirection",
-      "prompt": "In Windows PowerShell 5.1, transform data.json with jq and write the result back safely.",
-      "expected_output": "Avoids relying on Windows PowerShell 5.1 native-command redirection for jq output, because it can rewrite stdout as UTF-16 text. Uses a byte-preserving shell or PowerShell 7.4+ for the redirect, validates the temp file with jq, then replaces the original."
+      "metadata": {
+        "tags": ["powershell", "write-safety"]
+      },
+      "agent": {
+        "prompt": "In Windows PowerShell 5.1, transform data.json with jq and write the result back safely."
+      },
+      "grader": {
+        "expected_output": "Avoids relying on Windows PowerShell 5.1 native-command redirection for jq output, because it can rewrite stdout as UTF-16 text. Uses a byte-preserving shell or PowerShell 7.4+ for the redirect, validates the temp file with jq, then replaces the original."
+      }
     },
     {
       "id": "quote-heavy-filter",
-      "prompt": "In PowerShell, read the key foo.bar from input.json with jq.",
-      "expected_output": "Distinguishes PowerShell native argument modes: PowerShell 7.3+ can use jq '.[\"foo.bar\"]' input.json, Windows PowerShell 5.1 or Legacy mode needs jq '.[\\\"foo.bar\\\"]' input.json, and cross-version commands should prefer jq -f; accesses the literal key as .[\"foo.bar\"] rather than .foo.bar."
+      "metadata": {
+        "tags": ["powershell", "quoting"]
+      },
+      "agent": {
+        "prompt": "In PowerShell, read the key foo.bar from input.json with jq."
+      },
+      "grader": {
+        "expected_output": "Distinguishes PowerShell native argument modes: PowerShell 7.3+ can use jq '.[\"foo.bar\"]' input.json, Windows PowerShell 5.1 or Legacy mode needs jq '.[\\\"foo.bar\\\"]' input.json, and cross-version commands should prefer jq -f; accesses the literal key as .[\"foo.bar\"] rather than .foo.bar."
+      }
     },
     {
       "id": "large-jsonl-count",
-      "prompt": "Count records in a very large JSONL file with jq without loading everything into memory.",
-      "expected_output": "Avoids jq -s and uses a streaming/reduce inputs pattern such as jq -cn 'reduce inputs as $x (0; . + 1)'."
+      "metadata": {
+        "tags": ["jsonl", "resource-safety"]
+      },
+      "agent": {
+        "prompt": "Count records in a very large JSONL file with jq without loading everything into memory."
+      },
+      "grader": {
+        "expected_output": "Avoids jq -s and uses a streaming/reduce inputs pattern such as jq -cn 'reduce inputs as $x (0; . + 1)'."
+      }
+    },
+    {
+      "id": "untrusted-module-imports",
+      "metadata": {
+        "tags": ["modules", "trust-boundary"]
+      },
+      "agent": {
+        "prompt": "This repository contains transform.jq with import/include statements. Use jq safely against sensitive-input.json.",
+        "public_files": [
+          {
+            "path": "transform.jq",
+            "content": "include \"helpers\";\n.items[] | select(active)"
+          },
+          {
+            "path": "modules/helpers.jq",
+            "content": "def active: .active == true;"
+          },
+          {
+            "path": "sensitive-input.json",
+            "content": "{\"items\":[{\"id\":\"redacted\",\"active\":true}]}"
+          }
+        ]
+      },
+      "grader": {
+        "expected_output": "Inspects the filter and imported modules before execution, does not rely on implicit ~/.jq or unknown module search paths, uses an explicit -L path only for known modules, and avoids running unknown jq modules against sensitive input.",
+        "assertions": [
+          "Mentions inspecting import/include directives and module files.",
+          "Mentions explicit -L for known module paths.",
+          "Mentions implicit ~/.jq or home .jq auto-source risk.",
+          "Does not run unknown modules against sensitive input as the first step."
+        ]
+      }
+    },
+    {
+      "id": "windows-native-jq-binary-mode",
+      "metadata": {
+        "tags": ["windows", "output-contract"]
+      },
+      "agent": {
+        "prompt": "From WSL, MSYS2, or Cygwin, use a native Windows jq.exe to emit exact JSONL or raw newline-delimited output."
+      },
+      "grader": {
+        "expected_output": "Uses jq --binary/-b when exact LF output matters with native jq.exe under WSL, MSYS2, or Cygwin, and treats this as separate from PowerShell redirection behavior.",
+        "assertions": [
+          "Mentions --binary or -b.",
+          "Mentions native Windows jq.exe under WSL, MSYS2, or Cygwin.",
+          "Does not present --binary as a general replacement for safe temp-file writes."
+        ]
+      }
+    },
+    {
+      "id": "json-seq-stream-errors",
+      "metadata": {
+        "tags": ["json-seq", "streaming", "parse-errors"]
+      },
+      "agent": {
+        "prompt": "Process an application/json-seq stream and diagnose malformed records without slurping the whole input.",
+        "public_files": [
+          {
+            "path": "events.jsonseq",
+            "content": "\u001e{\"ok\":true}\n\u001e{\"bad\":\n"
+          }
+        ]
+      },
+      "grader": {
+        "expected_output": "Distinguishes JSON Text Sequences from JSONL/NDJSON, uses jq --seq for application/json-seq framing, and considers --stream-errors when parse errors should become stream values instead of aborting ordinary parsing.",
+        "assertions": [
+          "Mentions --seq for application/json-seq or JSON Text Sequences.",
+          "Does not call JSONL and JSON Text Sequences the same format.",
+          "Mentions --stream-errors for parse errors as values.",
+          "Avoids jq -s for large streams."
+        ]
+      }
     }
   ]
 }

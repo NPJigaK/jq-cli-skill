@@ -33,6 +33,7 @@ Prefer small, verified jq commands over ad hoc JSON parsing in shell text tools.
    - Pass user strings with `--arg name value`.
    - Pass trusted JSON values with `--argjson name JSON`.
    - Pass files with `--slurpfile name file.json` or `--rawfile name file.txt`.
+   - For filters with `import` or `include`, read `references/modules.md`.
    - Do not concatenate untrusted user text into a jq filter.
 5. Execute with shell-aware quoting:
    - For complex filters, write a temporary `.jq` file and run `jq -f filter.jq`.
@@ -83,3 +84,5 @@ jq empty output.tmp
   PowerShell, cmd.exe, POSIX shells, or CI YAML.
 - Read `references/gotchas.md` for precision, module/import, JSONL, memory, and
   secret-leak hazards.
+- Read `references/modules.md` before running repository-provided jq modules,
+  imports, or includes, especially against sensitive input.

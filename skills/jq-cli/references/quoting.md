@@ -73,6 +73,12 @@ jq ".[\"foo\"]" input.json
 
 For anything beyond a short filter, write a `.jq` file and use `-f`.
 
+## Windows POSIX-Like Shells
+
+When WSL, MSYS2, or Cygwin invokes a native Windows `jq.exe`, use
+`--binary` / `-b` when exact LF output matters. This controls jq's newline
+translation; it does not solve shell quoting or safe file replacement.
+
 ## Dynamic Keys and Values
 
 Do not interpolate dynamic keys into the jq filter:
