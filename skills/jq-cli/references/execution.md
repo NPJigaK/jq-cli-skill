@@ -94,8 +94,9 @@ mv data.json.tmp data.json
 
 On Windows, use the same idea with PowerShell commands. Use the following
 redirect pattern in PowerShell 7.4+ or another byte-preserving shell. Windows
-PowerShell 5.1 and PowerShell 7.3 or older can rewrite redirected native stdout
-as text, commonly UTF-16, which `jq` may not parse on the validation step.
+PowerShell 5.1 and PowerShell 7.3 or older treat redirected native stdout as
+text rather than preserving the original byte stream; Windows PowerShell 5.1
+commonly writes UTF-16 output that `jq` may not parse on the validation step.
 
 ```powershell
 jq '.items |= sort_by(.id)' data.json > data.json.tmp
