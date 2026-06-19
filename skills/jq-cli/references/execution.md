@@ -51,10 +51,12 @@ Validate the saved output against the consumer's contract, not just syntax:
 
 ```bash
 jq 'map({id, name})' input.json > output.tmp
-jq -e 'type == "array" and all(.[]; has("id") and has("name"))' output.tmp
+jq -s -e 'length == 1 and (.[0] | type == "array" and all(.[]; has("id") and has("name")))' output.tmp > /dev/null
 ```
 
-If parseability is the only contract, `jq empty output.tmp` is enough.
+The `-s` form above rejects extra top-level JSON texts before handing the file
+to a consumer that expects exactly one JSON value. If parseability of a JSON
+stream is the only contract, `jq empty output.tmp` is enough.
 
 ## Output Modes
 

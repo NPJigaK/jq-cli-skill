@@ -48,6 +48,11 @@ Before passing jq output to another command, decide whether the contract is one
 JSON value, JSONL, raw text, or only a validation exit status. Save important
 outputs to a temp file and validate that contract explicitly.
 
+With `-e`, jq sets the exit status from the last output value. A check can emit
+`false` for an earlier JSON text and `true` for a later one, then exit `0`. If a
+consumer expects exactly one JSON value, use `-s` and assert `length == 1` before
+checking the value.
+
 ## Precision Can Matter
 
 jq number handling can preserve decimal literals in some cases, but arithmetic

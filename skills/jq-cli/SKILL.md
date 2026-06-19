@@ -46,7 +46,8 @@ Prefer small, verified jq commands over ad hoc JSON parsing in shell text tools.
    - Use `-r` only when the consumer expects raw strings, not JSON.
    - Use `-e` for boolean validation checks and interpret exit statuses.
    - If another command will consume saved output as JSON, validate it with
-     `jq empty` or a stronger `jq -e` contract check before handing it off.
+     `jq empty` when parseability is enough, or a stronger contract check. For
+     exactly one JSON value, include an input-count check such as `jq -s -e`.
    - Avoid dumping huge transformed JSON into the chat; write to a file or show a
      capped preview.
 7. Write files safely:
@@ -85,7 +86,7 @@ Safely rewrite a JSON file:
 
 ```bash
 jq '.items |= sort_by(.id)' data.json > data.json.tmp
-jq empty data.json.tmp
+jq -s -e 'length == 1' data.json.tmp > /dev/null
 mv data.json.tmp data.json
 ```
 
