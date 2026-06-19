@@ -40,6 +40,22 @@ jq --rawfile body message.txt '.message = $body' input.json
 Use `--argjson` only for text that is intended to be valid JSON. If the value is
 from a user and should be treated as text, use `--arg`.
 
+## Sample and Contract Checks
+
+For generated filters, quote-heavy filters, or transforms whose output will
+replace a file or feed another command, test the command on representative input
+before the full run. A jq command can parse and still produce the wrong contract:
+multiple JSON texts, raw strings, `null`, or a larger output than expected.
+
+Validate the saved output against the consumer's contract, not just syntax:
+
+```bash
+jq 'map({id, name})' input.json > output.tmp
+jq -e 'type == "array" and all(.[]; has("id") and has("name"))' output.tmp
+```
+
+If parseability is the only contract, `jq empty output.tmp` is enough.
+
 ## Output Modes
 
 | Need | Option | Notes |

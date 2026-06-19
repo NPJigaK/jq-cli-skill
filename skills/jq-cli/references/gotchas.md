@@ -41,6 +41,13 @@ explicit comparisons, and `-e`:
 jq -e 'has("foo") and (.foo != null)' input.json
 ```
 
+## Successful jq Can Still Have the Wrong Contract
+
+Parsing and exit code `0` do not prove the output is suitable for the next step.
+Before passing jq output to another command, decide whether the contract is one
+JSON value, JSONL, raw text, or only a validation exit status. Save important
+outputs to a temp file and validate that contract explicitly.
+
 ## Precision Can Matter
 
 jq number handling can preserve decimal literals in some cases, but arithmetic

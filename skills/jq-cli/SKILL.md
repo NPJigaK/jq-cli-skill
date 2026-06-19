@@ -21,6 +21,8 @@ Prefer small, verified jq commands over ad hoc JSON parsing in shell text tools.
    - Determine whether input is one JSON value, multiple JSON texts, JSONL/NDJSON,
      raw text, or generated input.
    - Preview only a small sample for large files.
+   - Decide whether downstream steps need one JSON value, JSONL, raw text, or
+     only a validation exit status.
 3. Choose the right input mode:
    - Normal JSON or JSONL: default jq input is usually correct.
    - No input / construct JSON: use `-n`.
@@ -37,10 +39,14 @@ Prefer small, verified jq commands over ad hoc JSON parsing in shell text tools.
 5. Execute with shell-aware quoting:
    - For complex filters, write a temporary `.jq` file and run `jq -f filter.jq`.
    - For shell-specific quoting details, read `references/quoting.md`.
+   - For generated, quote-heavy, or file-changing transforms, test on a small
+     representative sample before running against the full input.
 6. Bound and interpret output:
    - Use `-c` for compact JSON lines.
    - Use `-r` only when the consumer expects raw strings, not JSON.
    - Use `-e` for boolean validation checks and interpret exit statuses.
+   - If another command will consume saved output as JSON, validate it with
+     `jq empty` or a stronger `jq -e` contract check before handing it off.
    - Avoid dumping huge transformed JSON into the chat; write to a file or show a
      capped preview.
 7. Write files safely:
@@ -73,6 +79,14 @@ Use a filter file for anything quote-heavy:
 ```bash
 jq -f transform.jq input.json > output.tmp
 jq empty output.tmp
+```
+
+Safely rewrite a JSON file:
+
+```bash
+jq '.items |= sort_by(.id)' data.json > data.json.tmp
+jq empty data.json.tmp
+mv data.json.tmp data.json
 ```
 
 ## References
