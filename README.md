@@ -2,6 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Latest release](https://img.shields.io/github/v/release/NPJigaK/jq-cli-skill?label=release)](https://github.com/NPJigaK/jq-cli-skill/releases/latest)
+[![SkillSpector scan](https://github.com/NPJigaK/jq-cli-skill/actions/workflows/skillspector.yml/badge.svg?branch=main)](https://github.com/NPJigaK/jq-cli-skill/actions/workflows/skillspector.yml?query=branch%3Amain)
 
 A portable Agent Skill for using the `jq` command-line JSON processor safely
 and reliably from Codex, Claude Code, Cursor, and other SKILL.md-compatible
